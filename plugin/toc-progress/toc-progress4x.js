@@ -1,9 +1,12 @@
 /**
  * Author: Thus0
  *
- * Javascript for the toc_progress4x plugin for Reveal.js 4.x
+ * Javascript for the toc_progress plugin for Reveal.js 4.x
  *      fork from TOC-Progress plugin by Igor Leturia, to be compatible with Reveal.js 4.x
- *      
+ *
+ * The plugin can be configured in reveal.json with toc_progress:{} json array 
+ *
+ * Warning: this plugin was not tested on Reveal.js 3.x for retro-compatibility
  *
  * License: GPL v3 (see LICENSE.md)
  *
@@ -12,8 +15,8 @@
  *   - TOC-Progress by Igor Leturia https://github.com/lucarin91/Reveal.js-TOC-Progress/
  */
 
-window.toc_progress4x = window.toc_progress4x || {
-    id: 'toc_progress4x',
+window.toc_progress = window.toc_progress || {
+    id: 'toc_progress',
     init: function (deck) {
         initialize(deck);
     }
@@ -37,68 +40,66 @@ function scriptPath() {
     console.log("Path: " + path);
     return path;
 }
-
-// Get plugin path
 var path = scriptPath();
 
 /**
- * Init plugin TocProgress2
+ * Init plugin FooterProgress
  */
 const initialize = function(Reveal) {
     // Global variables
-    var toc_progress_on = false;            // indicate that TOC-Progress footer is displayed
+    var toc_progress_on = false;    // indicate that TOC-Progress footer is displayed
 
     // Initialize default configuration
-    var reduce_or_scroll = 'scroll';        // "reduce" | "scroll"
-    var background = 'rgba(0,0,127,0.1)';
-    var current_color = 'white';
-    var viewport = "body";                  // "html" for Reveal.js 3.x | "body" for Reveal.js 4.x
-    var hide_h2_title = true;               // hide h2 title on secondary view
-    var show_toc = true;                    // show TOC-Progress footer on startup
-    var hotkey = "Q";                       // hotkey to toggle TOC-Progress footer
-
+    var background = 'rgba(0,0,127,0.1)';           // color of TOC footer background
+    var current_background = 'rgb(70,70,100)';      // color of current slide title
+    var current_bullet = 'red';                     // color of current slide title
+    var hide_h2_title = true;                       // hide h2 title on secondary view
+    var reduce_or_scroll = 'scroll';                // reduce | scroll
+    var show_toc = true;                            // show TOC-Progress footer on startup
+    var hotkey = "Q";                               // hotkey to toggle TOC-Progress footer
+    var viewport = "body";                          // "html" for Reveal.js 3.x | "body" for Reveal.js 4.x
 
     // Load configuration file
-    var config = configure();
+    loadConfig();
 
-    // Load CSS stylesheet
-    loadStylesheet(config, path);
+    // Load stylesheet
+    loadStylesheet(config);
 
     // Load key bindings
     loadKeyBindings(config);
-
+    
     // Call toggle on startup
     if (show_toc == true) {
         toggle();
     }
 
     /**
+     * EventListener: 'slidechanged'
      * Capture 'slidechanged' event to reduce or scroll the elements in the TOC-Progress footer if necessary
      */
     Reveal.addEventListener( 'slidechanged', function( event ) {
-        console.log("'slidechanged' event received");
         reduceOrScrollIfNecessary(reduce_or_scroll);
     } );
 
     /**
      * Load configuration
      */
-    function configure() {
-        console.log("configure");
-        config = Reveal.getConfig().toc_progress4x || {};
-        if ( 'reduce_or_scroll' in config ) reduce_or_scroll = config.reduce_or_scroll;
+    function loadConfig() {
+        config = Reveal.getConfig().toc_progress || {};
         if ( 'background' in config ) background = config.background;
-        if ( 'current_color' in config ) current_color = config.current_color;
-        if ( 'viewport' in config ) viewport = config.viewport;
+        if ( 'current_background' in config ) current_background = config.current_background;
+        if ( 'current_bullet' in config ) current_bullet = config.current_bullet;
         if ( 'hide_h2_title' in config ) hide_h2_title = config.hide_h2_title;
-        if ( 'show_toc' in config ) show_toc = config.show_toc;
         if ( 'hotkey' in config ) hotkey = config.hotkey;
+        if ( 'reduce_or_scroll' in config ) reduce_or_scroll = config.reduce_or_scroll;
+        if ( 'show_toc' in config ) show_toc = config.show_toc;
+        if ( 'viewport' in config ) viewport = config.viewport;
     }
 
     /**
      * Load stylesheet
      */
-    function loadStylesheet(config, path) { 
+    function loadStylesheet(config) { 
         var head = document.querySelector("head");
 
         // Add footer_process.css stylesheet
@@ -127,9 +128,9 @@ const initialize = function(Reveal) {
 
     /**
      * Load key bindings
+     * Capture 'Q' (81) key to toggle the diplay of the TOC-Progress footer
      */
     function loadKeyBindings(config) {
-        // Capture 'Q' (81) key to toggle the diplay of the TOC-Progress footer
         // TODO: warn user if key is already set
         Reveal.addKeyBinding( { keyCode: hotkey.charCodeAt(0), key: hotkey, description: "Toggle TOC-Progress footer" }, function() {toggle()} ); 
     }
@@ -142,8 +143,6 @@ const initialize = function(Reveal) {
         if (!obj) {
             var obj=document;
         };
-        console.log("obj");console.log(obj);
-        console.log("list");console.log(list);
         var tagNames=list.split(',');
         var resultArray=new Array();
         for (var i=0;i<tagNames.length;i++) {
@@ -176,8 +175,6 @@ const initialize = function(Reveal) {
      * Method to create the TOC-Progress footer
      */
     function create() {
-        console.log("create");
-
         // Create the skeleton
         var toc_progress_footer = document.createElement("footer");
         toc_progress_footer.setAttribute('id','toc-progress-footer');
@@ -209,8 +206,7 @@ const initialize = function(Reveal) {
         style_node.appendChild(document.createTextNode('\n'));
         div_class_reveal.parentNode.insertBefore(style_node,div_class_reveal.nextSibling);
 
-        // Detect main sections and subsections
-        // and create list elements in the TOC-Progress footer and styles for each
+        // Detect main sections and subsections and create list elements in the TOC-Progress footer and styles for each
         var main_sections=document.querySelectorAll('.slides > section');	
         for (var main_sections_index=0;main_sections_index<main_sections.length;main_sections_index++) {
             var main_section=main_sections[main_sections_index];
@@ -219,11 +215,7 @@ const initialize = function(Reveal) {
             // Main title
             var main_title_set = false;
             {
-                var title_element=getElementsByTagNames('h1,h2,h3',main_section)[0];
-                // begin debug
-                //console.log("Main title_element: ");
-                //console.log(title_element);
-                // end debug
+                var title_element=getElementsByTagNames('h1,h2,h3,h4',main_section)[0];
                 if (title_element!=null && (!title_element.hasAttribute('class') || title_element.getAttribute('class').indexOf('no-toc-progress')==-1)) {
                     if (main_section.hasAttribute('data-state')) {
                         main_section.setAttribute('data-state',main_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString());
@@ -237,8 +229,8 @@ const initialize = function(Reveal) {
                     a_element.setAttribute('href','#/'+main_sections_index.toString());
                     a_element.appendChild(document.createTextNode(title_element.textContent));
                     li_element.appendChild(a_element);
-                    style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+' a{font-weight: bold; color: ' + current_color + '}\n';
-                    style_node.textContent=style_node.textContent+viewport+'[class*="toc-progress-'+main_sections_index.toString()+'-"] #toc-progress-'+main_sections_index.toString()+' a{font-weight: bold; color: ' + current_color + '}\n';
+                    style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+                    style_node.textContent=style_node.textContent+viewport+'[class*="toc-progress-'+main_sections_index.toString()+'-"] #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
                     style_node.textContent=style_node.textContent+viewport+':not([class*="toc-progress-'+main_sections_index.toString()+'-"]):not([class*="toc-progress-'+main_sections_index.toString()+' "]):not([class$="toc-progress-'+main_sections_index.toString()+'"]) li[id^="toc-progress-'+main_sections_index.toString()+'-"] {display: none;}\n';
                     main_title_set = true;
                 } else if (title_element==null) {
@@ -261,10 +253,6 @@ const initialize = function(Reveal) {
                 for (var secondary_sections_index=0;secondary_sections_index<secondary_sections.length;secondary_sections_index++) {
                     var secondary_section=secondary_sections[secondary_sections_index];
                     var title_element=getElementsByTagNames('h1,h2,h3',secondary_section)[0];
-                    // begin debug
-                    //console.log("Secondary title_element: ");
-                    //console.log("tagName: " + title_element.tagName);
-                    // end debug
                     if (secondary_section.hasAttribute('class') && secondary_section.getAttribute('class').indexOf('no-toc-progress')!=-1) {
                         title_element = null;
                     }
@@ -282,8 +270,8 @@ const initialize = function(Reveal) {
                             a_element.setAttribute('href','#/'+main_sections_index.toString());
                             a_element.appendChild(document.createTextNode(title_element.textContent));
                             li_element.appendChild(a_element);
-                            style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+' a{font-weight: bold; color: ' + current_color + '}\n';
-                            style_node.textContent=style_node.textContent+viewport+'[class*="toc-progress-'+main_sections_index.toString()+'-"] #toc-progress-'+main_sections_index.toString()+' a{font-weight: bold; color: ' + current_color + '}\n';
+                            style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+                            style_node.textContent=style_node.textContent+viewport+'[class*="toc-progress-'+main_sections_index.toString()+'-"] #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
                             style_node.textContent=style_node.textContent+viewport+':not([class*="toc-progress-'+main_sections_index.toString()+'-"]):not([class*="toc-progress-'+main_sections_index.toString()+' "]):not([class$="toc-progress-'+main_sections_index.toString()+'"]) li[id^="toc-progress-'+main_sections_index.toString()+'-"] {display: none;}\n';
                         } else {
                             if (secondary_section.hasAttribute('data-state')) {
@@ -301,8 +289,8 @@ const initialize = function(Reveal) {
                                 a_element.setAttribute('href','#/'+main_sections_index.toString()+'/'+secondary_sections_index.toString());
                                 a_element.appendChild(document.createTextNode(title_element.textContent));
                                 li_element.appendChild(a_element);
-                                style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' a{font-weight: bold; color: ' + current_color + '}\n';
-                            } else if (title_element.tagName == "H3") {
+                                style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+                            } else {
                                 var li_element=document.createElement('li');
                                 li_element.setAttribute('id','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
                                 toc_progress_footer_secondary_inside_ul_ul.appendChild(li_element);
@@ -310,7 +298,7 @@ const initialize = function(Reveal) {
                                 a_element.setAttribute('href','#/'+main_sections_index.toString()+'/'+secondary_sections_index.toString());
                                 a_element.appendChild(document.createTextNode(title_element.textContent));
                                 li_element.appendChild(a_element);
-                                style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' a{font-weight: bold; color: ' + current_color + '}\n';
+                                style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
                             } 
                         };
                     } else if (title_element==null) {
@@ -335,14 +323,13 @@ const initialize = function(Reveal) {
 
         // Global variable to indicate that TOC-Progress footer is displayed
         toc_progress_on=true;
+
     }
 
     /*
      * Method to destroy the TOC-Progress footer
      */
     function destroy() {
-        console.log("destroy");
-
         var toc_progress_footer=document.getElementById('toc-progress-footer');
         toc_progress_footer.parentNode.removeChild(toc_progress_footer);
         var toc_progress_style=document.getElementById('toc-progress-style');
@@ -378,7 +365,7 @@ const initialize = function(Reveal) {
      * Reduce or scroll the elements in the TOC-Progress footer if necessary
      */
     function reduceOrScrollIfNecessary() {
-        if (toc_progress_on == true) {
+        if (toc_progress_on==true) {
             reduceOrScrollElementIfNecessary(document.getElementById('toc-progress-footer-main'));
             reduceOrScrollElementIfNecessary(document.getElementById('toc-progress-footer-secondary'));
         };

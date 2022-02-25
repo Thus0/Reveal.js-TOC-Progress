@@ -1,11 +1,26 @@
 {
-  "toc_progress4x": {
-    "reduce_or_scroll": "scroll",
+  "toc_progress": {
     "background": "rgba(0,0,127,0.1)",
-    "current_color": "white",
-    "viewport": "body",
+    "current_background": "rgb(70,70,100)",
+    "current_bullet": "red",
     "hide_h2_title": true,
-    "show_toc": false,
-    "hotkey": "Q"
+    "hotkey": "Q",
+    "reduce_or_scroll": "scroll",
+    "show_toc": true,
+    "viewport": "body"
   }
+  "controls": true,
+  "controlsBackArrows": "faded",
+  "disableLayout": false,
+  "fragments": false,
+  "progress": true,
+  "center": true,
+  "overview": true,
+  "transition": "convex",
+  "slideNumber": "c/t",
+  "width": 1024,
+  "height": 800,
+  "margin": 0.02,
+  "minScale": 0.2,
+  "maxScale": 2.0
 }

@@ -1,3 +1,3 @@
 options.plugins.push(
-    toc_progress4x
+  toc_progress
 );

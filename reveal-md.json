@@ -1,6 +1,6 @@
 {
-    "scripts": [
-        "plugin/toc-progress/toc-progress4x.js",
-        "plugins.js"
-    ]
+  "scripts": [
+    "plugin/toc-progress/toc-progress4x.js",
+    "plugins.js"
+  ] 
 }
