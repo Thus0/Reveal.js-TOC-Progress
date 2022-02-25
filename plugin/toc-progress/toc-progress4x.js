@@ -68,10 +68,9 @@ const initialize = function(Reveal) {
     loadKeyBindings(config);
 
     // Call toggle on startup
-    console.log("show_toc: " + show_toc);
-    /*if (show_toc == true) {
+    if (show_toc == true) {
         toggle();
-    }*/
+    }
 
     /**
      * Capture 'slidechanged' event to reduce or scroll the elements in the TOC-Progress footer if necessary
