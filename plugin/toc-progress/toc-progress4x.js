@@ -15,8 +15,8 @@
  *   - TOC-Progress by Igor Leturia https://github.com/lucarin91/Reveal.js-TOC-Progress/
  */
 
-window.toc_progress = window.toc_progress || {
-    id: 'toc_progress',
+window.RevealTocProgress = window.RevealTocProgress || {
+    id: 'reveal-toc-progress',
     init: function (deck) {
         initialize(deck);
     }
@@ -46,16 +46,13 @@ var path = scriptPath();
  * Init plugin FooterProgress
  */
 const initialize = function(Reveal) {
-    // Global variables
-    var toc_progress_on = false;    // indicate that TOC-Progress footer is displayed
-
     // Initialize default configuration
+    var toc_progress_on = false;                    // indicate that TOC-Progress footer is displayed
     var background = 'rgba(0,0,127,0.1)';           // color of TOC footer background
     var current_background = 'rgb(70,70,100)';      // color of current slide title
     var current_bullet = 'red';                     // color of current slide title
     var hide_h2_title = true;                       // hide h2 title on secondary view
     var reduce_or_scroll = 'scroll';                // reduce | scroll
-    var show_toc = true;                            // show TOC-Progress footer on startup
     var hotkey = "Q";                               // hotkey to toggle TOC-Progress footer
     var viewport = "body";                          // "html" for Reveal.js 3.x | "body" for Reveal.js 4.x
 
@@ -67,11 +64,12 @@ const initialize = function(Reveal) {
 
     // Load key bindings
     loadKeyBindings(config);
-    
-    // Call toggle on startup
-    if (show_toc == true) {
-        toggle();
-    }
+
+    // Create hidden TOC-Progress footer
+    create();
+
+    // Display TOC-Progress footer on startup
+    toggle();
 
     /**
      * EventListener: 'slidechanged'
@@ -92,7 +90,7 @@ const initialize = function(Reveal) {
         if ( 'hide_h2_title' in config ) hide_h2_title = config.hide_h2_title;
         if ( 'hotkey' in config ) hotkey = config.hotkey;
         if ( 'reduce_or_scroll' in config ) reduce_or_scroll = config.reduce_or_scroll;
-        if ( 'show_toc' in config ) show_toc = config.show_toc;
+        if ( 'toc_progress_on' in config ) toc_progress_on = config.toc_progress_on;
         if ( 'viewport' in config ) viewport = config.viewport;
     }
 
@@ -175,30 +173,50 @@ const initialize = function(Reveal) {
      * Method to create the TOC-Progress footer
      */
     function create() {
+        console.log("create");
         // Create the skeleton
+
+        // Footer primary
         var toc_progress_footer = document.createElement("footer");
-        toc_progress_footer.setAttribute('id','toc-progress-footer');
-        toc_progress_footer.setAttribute('style','background:'+background);
+            toc_progress_footer.setAttribute('id','toc-progress-footer');
+            toc_progress_footer.setAttribute('style','display: none');
         var toc_progress_footer_main=document.createElement('div');
-        toc_progress_footer_main.setAttribute('id','toc-progress-footer-main');
-        toc_progress_footer.appendChild(toc_progress_footer_main);
+            toc_progress_footer_main.setAttribute('id','toc-progress-footer-main');
+            toc_progress_footer.appendChild(toc_progress_footer_main);
         var toc_progress_footer_main_inside=document.createElement('div');
-        toc_progress_footer_main_inside.setAttribute('id','toc-progress-footer-main-inside');
-        toc_progress_footer_main.appendChild(toc_progress_footer_main_inside);
+            toc_progress_footer_main_inside.setAttribute('id','toc-progress-footer-main-inside');
+            toc_progress_footer_main.appendChild(toc_progress_footer_main_inside);
         var toc_progress_footer_main_inside_ul=document.createElement('ul');
-        toc_progress_footer_main_inside.appendChild(toc_progress_footer_main_inside_ul);
+            toc_progress_footer_main_inside.appendChild(toc_progress_footer_main_inside_ul);
+
+        // Footer secondary
         var toc_progress_footer_secondary=document.createElement('div');
-        toc_progress_footer_secondary.setAttribute('id','toc-progress-footer-secondary');
-        toc_progress_footer.appendChild(toc_progress_footer_secondary);
+            toc_progress_footer_secondary.setAttribute('id','toc-progress-footer-secondary');
+            toc_progress_footer.appendChild(toc_progress_footer_secondary);
         var toc_progress_footer_secondary_inside=document.createElement('div');
-        toc_progress_footer_secondary_inside.setAttribute('id','toc-progress-footer-secondary-inside');
-        toc_progress_footer_secondary.appendChild(toc_progress_footer_secondary_inside);
+            toc_progress_footer_secondary_inside.setAttribute('id','toc-progress-footer-secondary-inside');
+            toc_progress_footer_secondary.appendChild(toc_progress_footer_secondary_inside);
         var toc_progress_footer_secondary_inside_ul=document.createElement('ul');
-        toc_progress_footer_secondary_inside.appendChild(toc_progress_footer_secondary_inside_ul);
+            toc_progress_footer_secondary_inside.appendChild(toc_progress_footer_secondary_inside_ul);
         var toc_progress_footer_secondary_inside_ul_ul=document.createElement('ul');
-        toc_progress_footer_secondary_inside_ul.appendChild(toc_progress_footer_secondary_inside_ul_ul);
+            toc_progress_footer_secondary_inside_ul.appendChild(toc_progress_footer_secondary_inside_ul_ul);
+
+        // Footer tertiary
+        // TODO : create footer tertiary only if we process <h4> header
+        var toc_progress_footer_tertiary=document.createElement('div');
+            toc_progress_footer_tertiary.setAttribute('id','toc-progress-footer-tertiary');
+            toc_progress_footer.appendChild(toc_progress_footer_tertiary);
+        var toc_progress_footer_tertiary_inside=document.createElement('div');
+            toc_progress_footer_tertiary_inside.setAttribute('id','toc-progress-footer-tertiary-inside');
+            toc_progress_footer_tertiary.appendChild(toc_progress_footer_tertiary_inside);
+        var toc_progress_footer_tertiary_inside_ul=document.createElement('ul');
+            toc_progress_footer_tertiary_inside.appendChild(toc_progress_footer_tertiary_inside_ul);
+        var toc_progress_footer_tertiary_inside_ul_ul=document.createElement('ul');
+            toc_progress_footer_tertiary_inside_ul.appendChild(toc_progress_footer_tertiary_inside_ul_ul);
+
+        // Append our footer to Reveal object
         var div_class_reveal=document.querySelectorAll('.reveal')[0];
-        div_class_reveal.appendChild(toc_progress_footer);
+            div_class_reveal.appendChild(toc_progress_footer);
 
         // Create the style element
         var style_node=document.createElement('style');
@@ -207,33 +225,59 @@ const initialize = function(Reveal) {
         div_class_reveal.parentNode.insertBefore(style_node,div_class_reveal.nextSibling);
 
         // Detect main sections and subsections and create list elements in the TOC-Progress footer and styles for each
-        var main_sections=document.querySelectorAll('.slides > section');	
-        for (var main_sections_index=0;main_sections_index<main_sections.length;main_sections_index++) {
+        var main_sections=document.querySelectorAll('.slides > section');
+        
+        // own counter for secondary and tertiary footers
+        var primary_footer_index=0;
+        var secondary_footer_index=0;
+        var tertiary_footer_index=0;
+        var quaternary_footer_index=0;
+
+console.log("main_sections.length: " + main_sections.length);
+        for (var main_sections_index=0; main_sections_index<main_sections.length; main_sections_index++) {
+
+            primary_footer_index++;
             var main_section=main_sections[main_sections_index];
             var secondary_sections=main_section.getElementsByTagName('section');
 
             // Main title
             var main_title_set = false;
             {
-                var title_element=getElementsByTagNames('h1,h2,h3,h4',main_section)[0];
+                var title_element=getElementsByTagNames('h1,h2,h3',main_section)[0];
                 if (title_element!=null && (!title_element.hasAttribute('class') || title_element.getAttribute('class').indexOf('no-toc-progress')==-1)) {
+console.log("");
+console.log(".... 1 - create li ...." + title_element.textContent);
+
                     if (main_section.hasAttribute('data-state')) {
+                        console.log("\t[primary] has data-state in slide: " + main_sections_index.toString());
                         main_section.setAttribute('data-state',main_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString());
+                        //main_section.setAttribute('data-state',main_section.getAttribute('data-state')+' toc-progress-'+primary_footer_index.toString());
                     } else {
+                        console.log("\t[primary] don't have data-state in slide: " + main_sections_index.toString());
                         main_section.setAttribute('data-state','toc-progress-'+main_sections_index.toString());
+                        //main_section.setAttribute('data-state','toc-progress-'+primary_footer_index.toString());
                     };
                     var li_element=document.createElement('li');
                     li_element.setAttribute('id','toc-progress-'+main_sections_index.toString());
+                    //li_element.setAttribute('id','toc-progress-'+primary_footer_index.toString());
                     toc_progress_footer_main_inside_ul.appendChild(li_element);
                     var a_element=document.createElement('a');
                     a_element.setAttribute('href','#/'+main_sections_index.toString());
                     a_element.appendChild(document.createTextNode(title_element.textContent));
                     li_element.appendChild(a_element);
+
                     style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
                     style_node.textContent=style_node.textContent+viewport+'[class*="toc-progress-'+main_sections_index.toString()+'-"] #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+
                     style_node.textContent=style_node.textContent+viewport+':not([class*="toc-progress-'+main_sections_index.toString()+'-"]):not([class*="toc-progress-'+main_sections_index.toString()+' "]):not([class$="toc-progress-'+main_sections_index.toString()+'"]) li[id^="toc-progress-'+main_sections_index.toString()+'-"] {display: none;}\n';
+
                     main_title_set = true;
+
+console.log("sections_index: " + main_sections_index.toString())
+console.log("footers_index:  " + primary_footer_index.toString() + '/' + secondary_footer_index.toString() + '/' + tertiary_footer_index.toString());
+
                 } else if (title_element==null) {
+
                     var untitled_section_previous=main_section;
                     do {
                         if (untitled_section_previous.previousSibling==null) {
@@ -252,15 +296,22 @@ const initialize = function(Reveal) {
             if (secondary_sections.length>0) {
                 for (var secondary_sections_index=0;secondary_sections_index<secondary_sections.length;secondary_sections_index++) {
                     var secondary_section=secondary_sections[secondary_sections_index];
-                    var title_element=getElementsByTagNames('h1,h2,h3',secondary_section)[0];
+
+                    var title_element=getElementsByTagNames('h1,h2,h3,h4',secondary_section)[0];
                     if (secondary_section.hasAttribute('class') && secondary_section.getAttribute('class').indexOf('no-toc-progress')!=-1) {
                         title_element = null;
                     }
                     if (title_element!=null && (!title_element.hasAttribute('class') || title_element.getAttribute('class').indexOf('no-toc-progress')==-1)) {
+
                         if (secondary_sections_index==0 && !main_title_set) {
+console.log("");
+console.log(".... 2 - create li ...." + title_element.textContent);
+
                             if (secondary_section.hasAttribute('data-state')) {
+                                console.log("\t[secondary] has data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
                                 secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString());
                             } else {
+                                console.log("\t[secondary] don't have data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
                                 secondary_section.setAttribute('data-state','toc-progress-'+main_sections_index.toString());
                             };
                             var li_element=document.createElement('li');
@@ -270,36 +321,114 @@ const initialize = function(Reveal) {
                             a_element.setAttribute('href','#/'+main_sections_index.toString());
                             a_element.appendChild(document.createTextNode(title_element.textContent));
                             li_element.appendChild(a_element);
-                            style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+
+                            style_node.textContent=style_node.textContent+'.toc1 .toc-progress-'+main_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+
                             style_node.textContent=style_node.textContent+viewport+'[class*="toc-progress-'+main_sections_index.toString()+'-"] #toc-progress-'+main_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
-                            style_node.textContent=style_node.textContent+viewport+':not([class*="toc-progress-'+main_sections_index.toString()+'-"]):not([class*="toc-progress-'+main_sections_index.toString()+' "]):not([class$="toc-progress-'+main_sections_index.toString()+'"]) li[id^="toc-progress-'+main_sections_index.toString()+'-"] {display: none;}\n';
+
+console.log("sections_index: " + main_sections_index.toString())
+console.log("footers_index:  " + primary_footer_index.toString() + '/' + secondary_footer_index.toString() + '/' + tertiary_footer_index.toString());
                         } else {
-                            if (secondary_section.hasAttribute('data-state')) {
-                                secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
-                            } else {
-                                secondary_section.setAttribute('data-state','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
-                            };
 
+                            if (title_element.tagName == "H2") {
+console.log("");
+console.log(".... 3 - create li .... <h2>" + title_element.textContent)
 
-                            if (title_element.tagName == "H2" && !hide_h2_title) {
+                                secondary_footer_index++;
+                                tertiary_footer_index=0;
+                                if (secondary_section.hasAttribute('data-state')) {
+                                    console.log("\t[secondary] has data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                    secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString());
+                                } else {
+                                    console.log("\t[secondary] don't have data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                    secondary_section.setAttribute('data-state','toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString());
+                                };
+
+                                if (!hide_h2_title) {
+                                    var li_element=document.createElement('li');
+                                    //li_element.setAttribute('id','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                    li_element.setAttribute('id','toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString());
+                                    toc_progress_footer_secondary_inside_ul_ul.appendChild(li_element);
+                                    var a_element=document.createElement('a');
+                                    a_element.setAttribute('href','#/'+main_sections_index.toString()+'/'+secondary_sections_index.toString());
+                                    a_element.appendChild(document.createTextNode(title_element.textContent));
+                                    li_element.appendChild(a_element);
+
+                                    style_node.textContent=style_node.textContent+'.toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+' #toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+                                }
+
+console.log("sections_index: " + main_sections_index.toString() + '/' + secondary_sections_index.toString())
+console.log("footers_index:  " + secondary_footer_index.toString() + '/' + tertiary_footer_index.toString());
+
+                            } else if (title_element.tagName == "H3") {
+console.log("");
+console.log(".... 4 - create li <h3>...." + title_element.textContent);
+
+                                tertiary_footer_index++;
+                                quaternary_footer_index=0;
+                                if (secondary_section.hasAttribute('data-state')) {
+                                    console.log("\t[secondary] has data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+'-'+tertiary_footer_index.toString());
+                                    secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString());
+                                } else {
+                                    console.log("\t[secondary] don't have data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+'-'+tertiary_footer_index.toString());
+                                    secondary_section.setAttribute('data-state','toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString());
+                                };
+
                                 var li_element=document.createElement('li');
-                                li_element.setAttribute('id','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                //li_element.setAttribute('id','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                li_element.setAttribute('id','toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString());
                                 toc_progress_footer_secondary_inside_ul_ul.appendChild(li_element);
                                 var a_element=document.createElement('a');
                                 a_element.setAttribute('href','#/'+main_sections_index.toString()+'/'+secondary_sections_index.toString());
                                 a_element.appendChild(document.createTextNode(title_element.textContent));
                                 li_element.appendChild(a_element);
-                                style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
-                            } else {
+
+                                style_node.textContent=style_node.textContent+'.toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+' #toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+
+console.log("sections_index: " + main_sections_index.toString() + '/' + secondary_sections_index.toString())
+console.log("footers_index:  " + secondary_footer_index.toString() + '/' + tertiary_footer_index.toString());
+
+                            } else if (title_element.tagName == "H4") {
+console.log("");
+console.log(".... 5 - create li <h4>...." + title_element.textContent);
+
+                                quaternary_footer_index++;
+                                if (secondary_section.hasAttribute('data-state')) {
+                                    console.log("\t[tertiary] has data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' toc-progress-'+main_sections_index.toString()+'-'+tertiary_footer_index.toString()+'-'+quaternary_footer_index.toString());
+                                    secondary_section.setAttribute('data-state',secondary_section.getAttribute('data-state')+' toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+' toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+'-'+quaternary_footer_index.toString());
+                                } else {
+                                    console.log("\t[tertiary] don't have data-state in slide: " + main_sections_index.toString() + '/' + secondary_sections_index.toString());
+                                    //secondary_section.setAttribute('data-state','toc-progress-'+main_sections_index.toString()+'-'+tertiary_footer_index.toString()+' toc-progress-'+main_sections_index.toString()+'-'+tertiary_footer_index.toString()+'-'+quaternary_footer_index.toString());
+                                    secondary_section.setAttribute('data-state','toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+' toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+'-'+quaternary_footer_index.toString());
+                                };
+
                                 var li_element=document.createElement('li');
-                                li_element.setAttribute('id','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
-                                toc_progress_footer_secondary_inside_ul_ul.appendChild(li_element);
+                                //li_element.setAttribute('id','toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString());
+                                li_element.setAttribute('id','toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+'-'+quaternary_footer_index.toString());
+                                toc_progress_footer_tertiary_inside_ul_ul.appendChild(li_element);
                                 var a_element=document.createElement('a');
                                 a_element.setAttribute('href','#/'+main_sections_index.toString()+'/'+secondary_sections_index.toString());
                                 a_element.appendChild(document.createTextNode(title_element.textContent));
                                 li_element.appendChild(a_element);
-                                style_node.textContent=style_node.textContent+'.toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' #toc-progress-'+main_sections_index.toString()+'-'+secondary_sections_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
-                            } 
+
+                                style_node.textContent=style_node.textContent+viewport+':not([class*="toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+'"]) li[id^="toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+'-"] {display: none;}\n';
+
+                                style_node.textContent=style_node.textContent+'.toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+'-'+quaternary_footer_index.toString()+' #toc-progress-'+secondary_footer_index.toString()+'-'+tertiary_footer_index.toString()+'-'+quaternary_footer_index.toString()+' {font-weight: bold; background-color: ' + current_background + '; color: ' + current_bullet + '}\n';
+
+console.log("sections_index: " + main_sections_index.toString() + '/' + secondary_sections_index.toString())
+console.log("footers_index:  " + secondary_footer_index.toString() + '/' + tertiary_footer_index.toString() + '/' + quaternary_footer_index.toString());
+
+                            } else {
+                                console.log("\t[secondary] hide from TOC");
+                            }
+
                         };
                     } else if (title_element==null) {
                         var untitled_section_previous=secondary_section;
@@ -320,10 +449,6 @@ const initialize = function(Reveal) {
 
         // Reduce or scroll the elements in the TOC-Progress footer if necessary
         reduceOrScrollIfNecessary(reduce_or_scroll);
-
-        // Global variable to indicate that TOC-Progress footer is displayed
-        toc_progress_on=true;
-
     }
 
     /*
@@ -345,19 +470,19 @@ const initialize = function(Reveal) {
                 title_element_section.removeAttribute('data-state')
             };
         };
-
-        // Global variable to indicate that TOC-Progress footer is not displayed
-        toc_progress_on=false;
     };
 
     /*
      * Method to toggle the TOC-Progress footer
      */
     function toggle() {
-        if (toc_progress_on==false) {
-            create();
+        var toc_progress_footer=document.getElementById('toc-progress-footer');
+        if (toc_progress_on == true) {
+            toc_progress_footer.style="background: " + background;
+            toc_progress_on = true;
         } else {
-            destroy();
+            toc_progress_footer.style="display: none";
+            toc_progress_on = false;
         };
     };
 
@@ -368,6 +493,7 @@ const initialize = function(Reveal) {
         if (toc_progress_on==true) {
             reduceOrScrollElementIfNecessary(document.getElementById('toc-progress-footer-main'));
             reduceOrScrollElementIfNecessary(document.getElementById('toc-progress-footer-secondary'));
+            reduceOrScrollElementIfNecessary(document.getElementById('toc-progress-footer-tertiary'));
         };
     };
 
